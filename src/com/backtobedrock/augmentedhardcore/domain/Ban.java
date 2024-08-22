@@ -47,6 +47,7 @@ public class Ban {
         this.timeSincePreviousDeath = timeSincePreviousDeath;
     }
 
+
     public static Ban Deserialize(ConfigurationSection section) {
         LocalDateTime cStartDate = LocalDateTime.parse(section.getString("StartDate", LocalDateTime.MIN.toString()));
         LocalDateTime cExpirationDate = LocalDateTime.parse(section.getString("ExpirationDate", LocalDateTime.MIN.toString()));

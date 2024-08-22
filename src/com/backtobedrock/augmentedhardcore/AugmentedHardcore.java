@@ -25,6 +25,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import space.arim.libertybans.api.LibertyBans;
+import space.arim.omnibus.Omnibus;
+import space.arim.omnibus.OmnibusProvider;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -53,10 +56,36 @@ public class AugmentedHardcore extends JavaPlugin implements Listener {
 
     //runnables
     private UpdateChecker updateChecker;
+    public Omnibus omnibus;
+    public LibertyBans libertyBans;
+
+    public AugmentedHardcore() {
+
+    }
+    public AugmentedHardcore(Omnibus omnibus, LibertyBans libertyBans) {
+        this.omnibus = omnibus;
+        this.libertyBans = libertyBans;
+    }
+
+    public static AugmentedHardcore LibertyBansCreate() {
+        Omnibus omnibus = OmnibusProvider.getOmnibus();
+        LibertyBans libertyBans = omnibus.getRegistry().getProvider(LibertyBans.class).orElseThrow(() -> new IllegalStateException("LibertyBans not here!"));
+        return new AugmentedHardcore(omnibus, libertyBans);
+    }
+
+    public LibertyBans getLibertyBans() {
+        return libertyBans;
+    }
+
+    public Omnibus getOmnibus() {
+        return omnibus;
+    }
+
 
     @Override
     public void onEnable() {
         this.initialize();
+        LibertyBansCreate();
 
         //update checker
         this.updateChecker = new UpdateChecker();

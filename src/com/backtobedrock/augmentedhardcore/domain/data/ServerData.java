@@ -2,14 +2,24 @@ package com.backtobedrock.augmentedhardcore.domain.data;
 
 import com.backtobedrock.augmentedhardcore.AugmentedHardcore;
 import com.backtobedrock.augmentedhardcore.domain.Ban;
-import com.backtobedrock.augmentedhardcore.domain.enums.Permission;
+    import com.backtobedrock.augmentedhardcore.domain.enums.Permission;
 import com.backtobedrock.augmentedhardcore.runnables.Unban;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.javatuples.Pair;
+import space.arim.libertybans.api.LibertyBans;
+import space.arim.libertybans.api.PlayerVictim;
+import space.arim.libertybans.api.PunishmentType;
+import space.arim.libertybans.api.punish.DraftPunishment;
+import space.arim.libertybans.api.punish.PunishmentDrafter;
+import space.arim.libertybans.api.punish.PunishmentRevoker;
+import space.arim.libertybans.api.punish.RevocationOrder;
+import space.arim.omnibus.Omnibus;
+import space.arim.omnibus.util.concurrent.ReactionStage;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +33,51 @@ public class ServerData {
     private final Map<UUID, Unban> ongoingBans = new HashMap<>();
     private final Map<String, Ban> ongoingIPBans = new HashMap<>();
     private int totalDeathBans;
+
+    private LibertyBans libertyBans;
+    private Omnibus omnibus;
+
+    public ServerData(AugmentedHardcore AugmentedHardcore) {
+        this.plugin = AugmentedHardcore;
+        this.server = plugin.getServer();
+        this.libertyBans = plugin.getLibertyBans();
+        this.omnibus = plugin.getOmnibus();
+    }
+
+    public void libertyBansBanPlayer(UUID uuidToBan, String reason, Duration duration, String type) {
+
+        PunishmentDrafter drafter = libertyBans.getDrafter();
+        PunishmentType punishmentType = PunishmentType.BAN;
+
+        DraftPunishment draftBan = drafter
+                .draftBuilder()
+                .type(punishmentType)
+                .victim(PlayerVictim.of(uuidToBan))
+                .reason(reason)
+                .duration(duration)
+                .build();
+
+        draftBan.enactPunishment().thenAcceptSync((punishment) -> {
+            if (punishment == null) {
+                return;
+            }
+        });
+    }
+
+    public ReactionStage<?> libertyBansRevokeBan(UUID bannedPlayer) {
+        PunishmentRevoker revoker = libertyBans.getRevoker();
+
+        RevocationOrder revocationOrder = revoker.revokeByTypeAndVictim(
+                PunishmentType.BAN, PlayerVictim.of(bannedPlayer)
+        );
+        return revocationOrder.undoPunishment().thenAccept((undone) -> {
+            if (undone) {
+                return;
+            } else {
+                return;
+            }
+        });
+    }
 
     public ServerData() {
         this(0, new HashMap<>());
@@ -98,6 +153,7 @@ public class ServerData {
         }
         this.totalDeathBans++;
         this.plugin.getServerRepository().updateServerData(this);
+        libertyBansBanPlayer(player.getUniqueId(), ban.getValue1().getBanMessage(), Duration.ofMinutes(ban.getValue1().getBanTime()), "ban");
     }
 
     private void startBan(OfflinePlayer player, Pair<Integer, Ban> ban) {
@@ -116,6 +172,7 @@ public class ServerData {
         Unban ban = this.getBan(uuid);
         if (ban != null) {
             ban.finish();
+            libertyBansRevokeBan(uuid);
             return true;
         }
         return false;
@@ -123,6 +180,7 @@ public class ServerData {
 
     public void removeBan(OfflinePlayer player) {
         Unban unban = this.ongoingBans.remove(player.getUniqueId());
+        libertyBansRevokeBan(player.getUniqueId());
         if (unban != null) {
             unban.getBan().getValue1().setExpirationDate(LocalDateTime.now());
             this.plugin.getPlayerRepository().getByPlayer(player).thenAcceptAsync(playerData -> {
