@@ -62,15 +62,16 @@ public class AugmentedHardcore extends JavaPlugin implements Listener {
     public AugmentedHardcore() {
 
     }
-    public AugmentedHardcore(Omnibus omnibus, LibertyBans libertyBans) {
+
+    public void newValues(Omnibus omnibus, LibertyBans libertyBans) {
         this.omnibus = omnibus;
         this.libertyBans = libertyBans;
     }
 
-    public static AugmentedHardcore LibertyBansCreate() {
-        Omnibus omnibus = OmnibusProvider.getOmnibus();
-        LibertyBans libertyBans = omnibus.getRegistry().getProvider(LibertyBans.class).orElseThrow(() -> new IllegalStateException("LibertyBans not here!"));
-        return new AugmentedHardcore(omnibus, libertyBans);
+    private void loadLibertyBans() {
+            Omnibus omnibus = OmnibusProvider.getOmnibus();
+            libertyBans = omnibus.getRegistry().getProvider(LibertyBans.class).orElseThrow();
+            newValues(omnibus, libertyBans);
     }
 
     public LibertyBans getLibertyBans() {
@@ -85,7 +86,7 @@ public class AugmentedHardcore extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         this.initialize();
-        LibertyBansCreate();
+        loadLibertyBans();
 
         //update checker
         this.updateChecker = new UpdateChecker();

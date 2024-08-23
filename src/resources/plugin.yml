@@ -6,7 +6,8 @@ website: www.backtobedrock.com
 prefix: AugmentedHardcore
 description: A very customizable and lightweight plugin that enhances the hardcore aspect of Minecraft.
 api-version: 1.13
-softdepend: [ PlaceholderAPI, CombatLogX, LibertyBans]
+softdepend: [ PlaceholderAPI, CombatLogX]
+depend: [ LibertyBans]
 libraries:
   - com.zaxxer:HikariCP:5.0.1
   - org.javatuples:javatuples:1.2
