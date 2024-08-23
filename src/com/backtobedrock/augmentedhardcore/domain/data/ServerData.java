@@ -2,7 +2,7 @@ package com.backtobedrock.augmentedhardcore.domain.data;
 
 import com.backtobedrock.augmentedhardcore.AugmentedHardcore;
 import com.backtobedrock.augmentedhardcore.domain.Ban;
-    import com.backtobedrock.augmentedhardcore.domain.enums.Permission;
+import com.backtobedrock.augmentedhardcore.domain.enums.Permission;
 import com.backtobedrock.augmentedhardcore.runnables.Unban;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
@@ -17,7 +17,6 @@ import space.arim.libertybans.api.punish.DraftPunishment;
 import space.arim.libertybans.api.punish.PunishmentDrafter;
 import space.arim.libertybans.api.punish.PunishmentRevoker;
 import space.arim.libertybans.api.punish.RevocationOrder;
-import space.arim.omnibus.Omnibus;
 import space.arim.omnibus.util.concurrent.ReactionStage;
 
 import java.time.Duration;
